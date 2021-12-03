@@ -1,44 +1,50 @@
+require 'http'
+require 'uri'
+
 class LoginController < ApplicationController
   def initialize
     @oauth_client = OAuth2::Client.new(Rails.configuration.x.oauth.client_id,
                                        Rails.configuration.x.oauth.client_secret,
                                        authorize_url: '/authorize',
                                        site: Rails.configuration.x.oauth.idp_url,
-                                       token_url: '/oauth2/token',
+                                       token_url: '/api/token',
                                        redirect_uri: Rails.configuration.x.oauth.redirect_uri)
   end
 
   # The OAuth callback
   def callback
-    # Make a call to exchange the authorization_code for an access_token
-    response = @oauth_client.auth_code.get_token(params[:code])
-
-    # Extract the access token from the response
-    token = response.to_hash[:access_token]
-
-    # Decode the token
-    begin
-      decoded = TokenDecoder.new(token, @oauth_client.id).decode
-    rescue Exception => error
-      "An unexpected exception occurred: #{error.inspect}"
-      head :forbidden
-      return
+    if params[:error]
+      puts "Error logging in: ", params
+      render json: {status: "error", code: 400, message: "Unable to login"}
     end
 
-    # Set the token on the user session
-    session[:user_jwt] = {value: decoded, httponly: true}
+    Rails.cache.fetch("user_token", expires_in: 12.hours) do
+      # Make a call to exchange the authorization_code for an access_token
+      response = @oauth_client.auth_code.get_token(params[:code])
 
-    redirect_to root_path
+      # Extract the access token from the response
+      response.to_hash[:access_token]
+    end
+
+    token = Rails.cache.fetch("user_token")
+
+    HTTP.headers(:accept => "application/json")
+        .auth("Bearer #{token}")
+        .get('https://api.spotify.com/v1/me')
+
+    puts ENV['REDIRECT_URL']
+
+    redirect_to "#{ENV['REDIRECT_URL']}/randomize"
   end
 
   def logout
-    # Invalidate session with FusionAuth
-    @oauth_client.request(:get, 'oauth2/logout')
+    # Invalidate session with Spotify
+    @oauth_client.request(:get, '/logout')
 
     # Reset Rails session
     reset_session
 
-    redirect_to root_path
+    head :ok
   end
 
   def login

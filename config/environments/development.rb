@@ -63,7 +63,7 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # Uncomment if you wish to allow Action Cable access from any origin.
-  # config.action_cable.disable_request_forgery_protection = true
+  config.action_cable.disable_request_forgery_protection = true
 
   config.x.oauth.client_id = "6e53103644d24100984110dbc4d61bdf"
   config.x.oauth.client_secret = ENV['CLIENT_SECRET']
