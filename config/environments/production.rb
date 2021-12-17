@@ -114,5 +114,5 @@ Rails.application.configure do
   config.x.oauth.client_id = "6e53103644d24100984110dbc4d61bdf"
   config.x.oauth.client_secret = ENV['CLIENT_SECRET']
   config.x.oauth.idp_url = "https://accounts.spotify.com"
-  config.x.oauth.redirect_uri = ENV['REDIRECT_URI'] + "callback"
+  config.x.oauth.redirect_uri = ENV['REDIRECT_URI']
 end
