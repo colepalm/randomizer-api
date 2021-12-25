@@ -9,7 +9,8 @@ class RandomizerController < ApplicationController
   end
 
   def randomize
-    token = Rails.cache.fetch("user_token")
+    code = Rails.cache.fetch("user_code")
+    token = Rails.cache.fetch("user_token_#{code}")
 
     offset = 0
     continue = true
