@@ -39,6 +39,17 @@ class LoginController < ApplicationController
     redirect_to "#{ENV['REDIRECT_URL']}/randomize"
   end
 
+  def check
+    code = Rails.cache.fetch("user_code")
+    token = Rails.cache.fetch("user_token_#{code}")
+
+    if token == nil
+      head 401
+    else
+      head 200
+    end
+  end
+
   def logout
     # Invalidate session with Spotify
     @oauth_client.request(:get, '/logout')
