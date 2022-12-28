@@ -40,7 +40,9 @@ class LoginController < ApplicationController
   end
 
   def check
-    code = Rails.cache.fetch("user_code")
+    # TODO store user info - this code is getting stored for too long
+    #  it needs to be unique
+    code = Rails.cache.fetch("user_code_#{user}")
     token = Rails.cache.fetch("user_token_#{code}")
 
     if token == nil
